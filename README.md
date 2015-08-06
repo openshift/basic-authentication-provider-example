@@ -31,36 +31,31 @@ GitHub repository, or clone it to your own OpenShift-accessible git
 repository if you need to make any changes (e.g. to add an httpd module
 or build for a Linux other than RHEL).
 
-At the moment, there are some workarounds necessary for OpenShift
-Enterprise. Some of the following should become unnecessary as features
-and bug fixes are released.
-
-    $ docker pull registry.access.redhat.com/library/rhel  # workaround for new-app
     $ oc new-app --name=basicauthurl --labels=name=basicauthurl \
                  https://github.com/openshift/basic-authentication-provider-example
-    W0713 10:54:28.014586  104323 pipeline.go:225] A service will not be generated for DeploymentConfig "basicauthurl" [...]
     imagestreams/rhel
     imagestreams/basicauthurl
     buildconfigs/basicauthurl
     deploymentconfigs/basicauthurl
     A build was created - you can run `oc start-build basicauthurl` to start it.
-
-Since `oc new-app` does not currently do it, create a service for the deployment:
-
-    $ oc expose dc basicauthurl --port=8443 --generator=service/v1
-    $ oc get service basicauthurl
+    Service "basicauthurl" created at <IP> with port mappings 8443.
+    Run 'oc status' to view your app.
 
 You can use the resulting service IP for the server certificate and
-master config below.
+master config below. This is recommended.
 
-If instead you would like the master to reach your authentication service
-via a route (which may not be a good idea for security reasons), you
-can create that route as follows:
+If, instead, you would like the master to reach your authentication
+service via a route (which may not be a good idea for security reasons),
+you can create that route as follows:
 
     $ oc expose service/basicauthurl --hostname=<correctly resolving name>
 
-You would then need to use `oc edit route/basicauthurl` to make the
-resulting route use passthrough TLS.
+Then use `oc edit route/basicauthurl`
+to make the resulting route use [passthrough or reencrypt
+TLS](https://docs.openshift.com/enterprise/3.0/architecture/core_concepts/routes.html#secured-routes).
+Of course the route will only work from the master if you have deployed
+a router on OpenShift and the hostname in the route correctly resolves
+to it via DNS.
 
 ### Specify the configuration
 
